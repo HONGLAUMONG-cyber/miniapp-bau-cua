@@ -80,7 +80,7 @@
 </head>
 <body>
     <h2>🎲 BẦU CUA TÔM CÁ</h2>
-    <div class="balance">Số dư: <span id="balance">1,000,000đ</span></div>
+    <div class="balance">Số dư: <span id="balance">Đang tải...</span></div>
 
     <div class="grid">
         <div class="card" onclick="selectItem(this, 'bau')">
@@ -119,8 +119,27 @@
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-
         let selectedItem = null;
+
+        // Lấy User ID của người chơi từ Telegram WebApp
+        let userId = tg.initDataUnsafe?.user?.id || 123456; 
+
+        window.onload = async function() {
+            try {
+                // Thay thế domain API của bạn trên VPS
+                let response = await fetch(`https://api.cua-ban.com/get-balance?user_id=${userId}`);
+                let data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('balance').innerText = data.balance.toLocaleString() + 'đ';
+                } else {
+                    document.getElementById('balance').innerText = '0đ';
+                }
+            } catch (error) {
+                console.error("Lỗi tải số dư:", error);
+                document.getElementById('balance').innerText = 'Lỗi kết nối';
+            }
+        };
 
         function selectItem(element, name) {
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
@@ -128,7 +147,7 @@
             selectedItem = name;
         }
 
-        function placeBet() {
+        async function placeBet() {
             let amount = document.getElementById('amount').value;
             if (!selectedItem) {
                 alert('Vui lòng chọn linh vật trước khi cược!');
@@ -139,13 +158,32 @@
                 return;
             }
 
-            let payload = JSON.stringify({
-                action: 'place_bet',
-                item: selectedItem,
-                amount: parseInt(amount)
-            });
+            try {
+                // Thay thế API trên VPS của bạn
+                let response = await fetch('https://api.cua-ban.com/place-bet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'place_bet',
+                        item: selectedItem,
+                        amount: parseInt(amount),
+                        user_id: userId
+                    })
+                });
 
-            tg.sendData(payload);
+                let data = await response.json();
+                if (data.success) {
+                    alert('Đặt cược thành công! Số dư còn lại: ' + data.balance.toLocaleString() + 'đ');
+                    document.getElementById('balance').innerText = data.balance.toLocaleString() + 'đ';
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Lỗi kết nối tới server:', error);
+                alert('Không thể kết nối đến máy chủ, vui lòng kiểm tra lại địa chỉ API.');
+            }
         }
     </script>
 </body>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cỗ Máy In Tiền - Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        button {
+            padding: 15px 30px;
+            background-color: #e67e22;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background-color: #d35400; }
+    </style>
+</head>
+<body>
+    <h2>🎲 BẦU CUA - MINI APP</h2>
+    <p>Nhấn nút bên dưới để gửi lệnh cược về Bot</p>
+    <button onclick="sendDataToBot()">Đặt Cược Ngay</button>
+
+    <script>
+        // Khởi tạo WebApp
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Mở full màn hình
+
+        function sendDataToBot() {
+            // Dữ liệu gửi về bot (ví dụ: cược 50k cửa Tài)
+            const payload = JSON.stringify({
+                action: "place_bet",
+                amount: 50000,
+                side: "tai"
+            });
+            
+            // Gửi dữ liệu ngược lại cho bot xử lý
+            tg.sendData(payload);
+        }
+    </script>
+</body>
+</html>

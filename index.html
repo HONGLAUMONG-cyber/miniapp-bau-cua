@@ -126,8 +126,8 @@
 
         window.onload = async function() {
             try {
-                // Kết nối tới API Cloudflare Tunnel để lấy số dư
-                let response = await fetch(`https://drain-excellent-projects-poetry.trycloudflare.com/get-balance?user_id=${userId}`);
+                // Kết nối tới API Cloudflare Tunnel mới để lấy số dư
+                let response = await fetch(`https://shanghai-boom-missouri-gordon.trycloudflare.com/get-balance?user_id=${userId}`);
                 let data = await response.json();
                 
                 if (data.success) {
@@ -159,8 +159,8 @@
             }
 
             try {
-                // Kết nối tới API Cloudflare Tunnel để xử lý cược
-                let response = await fetch('https://drain-excellent-projects-poetry.trycloudflare.com/place-bet', {
+                // Kết nối tới API Cloudflare Tunnel mới để xử lý cược
+                let response = await fetch('https://shanghai-boom-missouri-gordon.trycloudflare.com/place-bet', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

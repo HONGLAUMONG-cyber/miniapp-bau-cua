@@ -126,8 +126,8 @@
 
         window.onload = async function() {
             try {
-                // Thay thế domain API của bạn trên VPS
-                let response = await fetch(`https://api.cua-ban.com/get-balance?user_id=${userId}`);
+                // Kết nối tới IP VPS của bác để lấy số dư
+                let response = await fetch(`http://160.250.180.65:5000/get-balance?user_id=${userId}`);
                 let data = await response.json();
                 
                 if (data.success) {
@@ -159,8 +159,8 @@
             }
 
             try {
-                // Thay thế API trên VPS của bạn
-                let response = await fetch('https://api.cua-ban.com/place-bet', {
+                // Kết nối tới IP VPS của bác để xử lý cược
+                let response = await fetch('http://160.250.180.65:5000/place-bet', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -182,7 +182,7 @@
                 }
             } catch (error) {
                 console.error('Lỗi kết nối tới server:', error);
-                alert('Không thể kết nối đến máy chủ, vui lòng kiểm tra lại địa chỉ API.');
+                alert('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại!');
             }
         }
     </script>

@@ -5,128 +5,409 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bầu Cua - Cỗ Máy In Tiền</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #e67e22;
-            --bg: #121212;
-            --surface: #1e1e1e;
+            --primary: #ff9a00;
+            --primary-gradient: linear-gradient(135deg, #ff9a00 0%, #e67e22 100%);
+            --bg: #0a0a0f;
+            --surface: rgba(26, 26, 36, 0.7);
+            --surface-border: rgba(255, 255, 255, 0.08);
             --text: #ffffff;
+            --text-secondary: #8e8ea9;
+            --accent: #26de81;
+            --danger: #fc5c65;
         }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             background-color: var(--bg);
+            background-image: radial-gradient(at 0% 0%, #ff9a0020 0px, transparent 50%),
+                              radial-gradient(at 98% 100%, #1a1a3a 0px, transparent 50%);
             color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 16px;
-            text-align: center;
+            min-height: 100vh;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        h2 { color: var(--primary); margin-bottom: 8px; }
-        .balance { font-size: 1.1rem; color: #a0a0a0; margin-bottom: 24px; }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #ffffff, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .balance-card {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            padding: 14px 24px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        }
+
+        .balance-card .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-card .value {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            max-width: 500px;
-            margin: 0 auto;
+            gap: 16px;
+            width: 100%;
+            max-width: 480px;
+            margin-bottom: 24px;
         }
+
         .card {
             background: var(--surface);
-            padding: 16px;
-            border-radius: 12px;
+            border: 1px solid var(--surface-border);
+            padding: 22px 12px;
+            border-radius: 20px;
             cursor: pointer;
-            border: 2px solid transparent;
-            transition: 0.2s;
-        }
-        .card.active {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(230, 126, 34, 0.3);
-        }
-        .icon { font-size: 2rem; margin-bottom: 8px; }
-        .name { font-weight: bold; font-size: 0.9rem; }
-        .bet-input {
-            margin-top: 24px;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .bet-input label { display: block; margin-bottom: 8px; color: #a0a0a0; }
-        .bet-input input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            background: #2a2a2a;
-            color: #fff;
-            box-sizing: border-box;
             text-align: center;
-            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
-        button.action-btn {
-            margin-top: 32px;
-            padding: 14px 28px;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            padding: 2px;
+            background: var(--primary-gradient);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(230, 126, 34, 0.15);
+            background: rgba(26, 26, 36, 0.9);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card.active {
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(230, 126, 34, 0.15);
+            border-color: var(--primary);
+            box-shadow: 0 0 25px rgba(230, 126, 34, 0.25);
+        }
+
+        .icon {
+            font-size: 2.4rem;
+            margin-bottom: 12px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .card:hover .icon, .card.active .icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .control-panel {
             width: 100%;
-            max-width: 300px;
-            transition: 0.2s;
+            max-width: 480px;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            padding: 24px;
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
         }
-        button.action-btn:hover { background: #d35400; }
+
+        .bet-input-group {
+            margin-bottom: 20px;
+        }
+
+        .bet-input-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bet-input-group input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #14141e;
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: border 0.3s ease;
+        }
+
+        .bet-input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(230, 126, 34, 0.2);
+        }
+
+        button.action-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(230, 126, 34, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button.action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(230, 126, 34, 0.4);
+            filter: brightness(1.1);
+        }
+
+        button.action-btn:active {
+            transform: translateY(1px);
+        }
+
+        .result-section {
+            margin-top: 28px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 18px;
+            border-left: 5px solid var(--primary);
+            display: none;
+            animation: slideUp 0.4s ease-out forwards;
+        }
+
+        .result-title {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-dice-grid {
+            display: flex;
+            justify-content: space-around;
+            gap: 12px;
+        }
+
+        .result-box {
+            background: #12121e;
+            padding: 14px;
+            border-radius: 14px;
+            width: 30%;
+            text-align: center;
+            border: 1px solid var(--surface-border);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .result-box:hover {
+            transform: translateY(-4px);
+        }
+
+        .result-box .emoji {
+            font-size: 2.2rem;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .result-box .label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(26, 26, 36, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 14px 28px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            z-index: 9999;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .notification.success { border-color: var(--accent); color: var(--accent); }
+        .notification.error { border-color: var(--danger); color: var(--danger); }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .shake-animation { animation: shake 0.4s ease-in-out; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        .win-effect { animation: pulse 0.6s infinite; }
     </style>
 </head>
 <body>
-    <h2>🎲 BẦU CUA TÔM CÁ</h2>
-    <div class="balance">Số dư: <span id="balance">Đang tải...</span></div>
+
+    <div id="notify" class="notification"></div>
+
+    <header>
+        <h2>🎲 BẦU CUA TÔM CÁ</h2>
+        <div class="balance-card">
+            <span class="label">Số dư ví:</span>
+            <span class="value" id="balance">Đang tải...</span>
+        </div>
+    </header>
 
     <div class="grid">
         <div class="card" onclick="selectItem(this, 'bau')">
-            <div class="icon">🎃</div>
+            <span class="icon">🎃</span>
             <div class="name">Bầu</div>
         </div>
         <div class="card" onclick="selectItem(this, 'cua')">
-            <div class="icon">🦀</div>
+            <span class="icon">🦀</span>
             <div class="name">Cua</div>
         </div>
         <div class="card" onclick="selectItem(this, 'tom')">
-            <div class="icon">🦐</div>
+            <span class="icon">🦐</span>
             <div class="name">Tôm</div>
         </div>
         <div class="card" onclick="selectItem(this, 'ca')">
-            <div class="icon">🐟</div>
+            <span class="icon">🐟</span>
             <div class="name">Cá</div>
         </div>
         <div class="card" onclick="selectItem(this, 'ga')">
-            <div class="icon">🐔</div>
+            <span class="icon">🐔</span>
             <div class="name">Gà</div>
         </div>
         <div class="card" onclick="selectItem(this, 'nai')">
-            <div class="icon">🦌</div>
+            <span class="icon">🦌</span>
             <div class="name">Nai</div>
         </div>
     </div>
 
-    <div class="bet-input">
-        <label for="amount">Số tiền đặt cược (VNĐ)</label>
-        <input type="number" id="amount" value="10000" min="1000">
-    </div>
+    <div class="control-panel">
+        <div class="bet-input-group">
+            <label for="amount">Số tiền đặt cược (VNĐ)</label>
+            <input type="number" id="amount" value="10000" min="1000">
+        </div>
 
-    <button class="action-btn" onclick="placeBet()">ĐẶT CƯỢC</button>
+        <button class="action-btn" id="bet-btn" onclick="placeBet()">Đặt cược ngay</button>
+
+        <div class="result-section" id="result-section">
+            <div class="result-title">
+                <span>Kết Quả Lắc Xúc Xắc</span>
+                <span id="result-status" style="font-size: 0.85rem;"></span>
+            </div>
+            <div class="result-dice-grid" id="result-grid"></div>
+        </div>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
         let selectedItem = null;
-
-        // Lấy User ID của người chơi từ Telegram WebApp
         let userId = tg.initDataUnsafe?.user?.id || 123456; 
+
+        const iconMap = {
+            'bau': '🎃', 'cua': '🦀', 'tom': '🦐',
+            'ca': '🐟', 'ga': '🐔', 'nai': '🦌'
+        };
+        const nameMap = {
+            'bau': 'Bầu', 'cua': 'Cua', 'tom': 'Tôm',
+            'ca': 'Cá', 'ga': 'Gà', 'nai': 'Nai'
+        };
+
+        // Hàm thông báo
+        function showNotification(message, type = 'success') {
+            const notify = document.getElementById('notify');
+            notify.innerText = (type === 'success' ? '✅ ' : '❌ ') + message;
+            notify.className = `notification show ${type}`;
+            setTimeout(() => {
+                notify.className = `notification`;
+            }, 3500);
+        }
 
         window.onload = async function() {
             try {
-                // Kết nối tới API Cloudflare Tunnel mới để lấy số dư
                 let response = await fetch(`https://shanghai-boom-missouri-gordon.trycloudflare.com/get-balance?user_id=${userId}`);
                 let data = await response.json();
                 
@@ -150,16 +431,19 @@
         async function placeBet() {
             let amount = document.getElementById('amount').value;
             if (!selectedItem) {
-                alert('Vui lòng chọn linh vật trước khi cược!');
+                showNotification('Vui lòng chọn linh vật trước khi cược!', 'error');
                 return;
             }
             if (!amount || amount <= 0) {
-                alert('Vui lòng nhập số tiền hợp lệ!');
+                showNotification('Vui lòng nhập số tiền hợp lệ!', 'error');
                 return;
             }
 
+            const btn = document.getElementById('bet-btn');
+            btn.innerText = "Đang xử lý...";
+            btn.disabled = true;
+
             try {
-                // Kết nối tới API Cloudflare Tunnel mới để xử lý cược
                 let response = await fetch('https://shanghai-boom-missouri-gordon.trycloudflare.com/place-bet', {
                     method: 'POST',
                     headers: {
@@ -174,15 +458,54 @@
                 });
 
                 let data = await response.json();
+                btn.innerText = "Đặt cược ngay";
+                btn.disabled = false;
+
                 if (data.success) {
-                    alert('Đặt cược thành công! Số dư còn lại: ' + data.balance.toLocaleString() + 'đ');
                     document.getElementById('balance').innerText = data.balance.toLocaleString() + 'đ';
+                    
+                    document.getElementById('result-section').style.display = 'block';
+                    let grid = document.getElementById('result-grid');
+                    grid.innerHTML = '';
+                    
+                    document.querySelector('.control-panel').classList.add('shake-animation');
+                    setTimeout(() => {
+                        document.querySelector('.control-panel').classList.remove('shake-animation');
+                    }, 400);
+
+                    // Xử lý đếm xem trúng được bao nhiêu nháy
+                    let count = data.result.filter(x => x === selectedItem).length;
+
+                    data.result.forEach(item => {
+                        grid.innerHTML += `
+                            <div class="result-box">
+                                <div class="emoji">${iconMap[item] || '❓'}</div>
+                                <div class="label">${nameMap[item] || ''}</div>
+                            </div>
+                        `;
+                    });
+
+                    const statusSpan = document.getElementById('result-status');
+                    if (count > 0) {
+                        statusSpan.innerHTML = `<span style="color:var(--accent);">THẮNG (${count}x)</span>`;
+                        showNotification(`Thắng ${data.result.filter(x => x === selectedItem).length} nháy! Số dư: ` + data.balance.toLocaleString() + 'đ', 'success');
+                        document.querySelector('.control-panel').classList.add('win-effect');
+                        setTimeout(() => {
+                            document.querySelector('.control-panel').classList.remove('win-effect');
+                        }, 2000);
+                    } else {
+                        statusSpan.innerHTML = `<span style="color:var(--danger);">THUA</span>`;
+                        showNotification('Chúc bác may mắn lần sau!', 'error');
+                    }
+
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    showNotification('Lỗi: ' + data.message, 'error');
                 }
             } catch (error) {
                 console.error('Lỗi kết nối tới server:', error);
-                alert('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại!');
+                showNotification('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại!', 'error');
+                btn.innerText = "Đặt cược ngay";
+                btn.disabled = false;
             }
         }
     </script>

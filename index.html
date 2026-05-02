@@ -3,49 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cỗ Máy In Tiền - Mini App</title>
+    <title>Bầu Cua - Cỗ Máy In Tiền</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            background-color: #111;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 50px;
+        :root {
+            --primary: #e67e22;
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --text: #ffffff;
         }
-        button {
-            padding: 15px 30px;
-            background-color: #e67e22;
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-weight: bold;
-            font-size: 16px;
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+        }
+        h2 { color: var(--primary); margin-bottom: 8px; }
+        .balance { font-size: 1.1rem; color: #a0a0a0; margin-bottom: 24px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--surface);
+            padding: 16px;
+            border-radius: 12px;
             cursor: pointer;
+            border: 2px solid transparent;
             transition: 0.2s;
         }
-        button:hover { background-color: #d35400; }
+        .card.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(230, 126, 34, 0.3);
+        }
+        .icon { font-size: 2rem; margin-bottom: 8px; }
+        .name { font-weight: bold; font-size: 0.9rem; }
+        .bet-input {
+            margin-top: 24px;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .bet-input label { display: block; margin-bottom: 8px; color: #a0a0a0; }
+        .bet-input input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #2a2a2a;
+            color: #fff;
+            box-sizing: border-box;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        button.action-btn {
+            margin-top: 32px;
+            padding: 14px 28px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            transition: 0.2s;
+        }
+        button.action-btn:hover { background: #d35400; }
     </style>
 </head>
 <body>
-    <h2>🎲 BẦU CUA - MINI APP</h2>
-    <p>Nhấn nút bên dưới để gửi lệnh cược về Bot</p>
-    <button onclick="sendDataToBot()">Đặt Cược Ngay</button>
+    <h2>🎲 BẦU CUA TÔM CÁ</h2>
+    <div class="balance">Số dư: <span id="balance">1,000,000đ</span></div>
+
+    <div class="grid">
+        <div class="card" onclick="selectItem(this, 'bau')">
+            <div class="icon">🎃</div>
+            <div class="name">Bầu</div>
+        </div>
+        <div class="card" onclick="selectItem(this, 'cua')">
+            <div class="icon">🦀</div>
+            <div class="name">Cua</div>
+        </div>
+        <div class="card" onclick="selectItem(this, 'tom')">
+            <div class="icon">🦐</div>
+            <div class="name">Tôm</div>
+        </div>
+        <div class="card" onclick="selectItem(this, 'ca')">
+            <div class="icon">🐟</div>
+            <div class="name">Cá</div>
+        </div>
+        <div class="card" onclick="selectItem(this, 'ga')">
+            <div class="icon">🐔</div>
+            <div class="name">Gà</div>
+        </div>
+        <div class="card" onclick="selectItem(this, 'nai')">
+            <div class="icon">🦌</div>
+            <div class="name">Nai</div>
+        </div>
+    </div>
+
+    <div class="bet-input">
+        <label for="amount">Số tiền đặt cược (VNĐ)</label>
+        <input type="number" id="amount" value="10000" min="1000">
+    </div>
+
+    <button class="action-btn" onclick="placeBet()">ĐẶT CƯỢC</button>
 
     <script>
-        // Khởi tạo WebApp
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Mở full màn hình
+        tg.expand();
 
-        function sendDataToBot() {
-            // Dữ liệu gửi về bot (ví dụ: cược 50k cửa Tài)
-            const payload = JSON.stringify({
-                action: "place_bet",
-                amount: 50000,
-                side: "tai"
+        let selectedItem = null;
+
+        function selectItem(element, name) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            selectedItem = name;
+        }
+
+        function placeBet() {
+            let amount = document.getElementById('amount').value;
+            if (!selectedItem) {
+                alert('Vui lòng chọn linh vật trước khi cược!');
+                return;
+            }
+            if (!amount || amount <= 0) {
+                alert('Vui lòng nhập số tiền hợp lệ!');
+                return;
+            }
+
+            let payload = JSON.stringify({
+                action: 'place_bet',
+                item: selectedItem,
+                amount: parseInt(amount)
             });
-            
-            // Gửi dữ liệu ngược lại cho bot xử lý
+
             tg.sendData(payload);
         }
     </script>

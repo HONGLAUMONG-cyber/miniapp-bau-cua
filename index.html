@@ -1,31 +1,67 @@
-# Trong hàm api_place_bet() của bot.py:
 @api_app.route('/place-bet', methods=['POST'])
 def api_place_bet():
     req = request.get_json()
-    game_type = req.get('game', 'bau-cua')
+    user_id = str(req.get('user_id'))
+    game_type = req.get('game', 'bau-cua') # Nhận loại game từ Web gửi sang
     items_bet = req.get('items')
-    amount = req.get('amount')
-    
-    # ... (Phần trừ tiền giữ nguyên) ...
+    amount_per_door = req.get('amount', 0)
 
-    if game_type == 'tai-xiu':
-        # Quay 3 xúc xắc từ 1-6
-        result = [random.randint(1, 6) for _ in range(3)]
-        total_score = sum(result)
-        
-        # Xác định Tài (11-17) hay Xỉu (4-10)
-        outcome = "tai" if 11 <= total_score <= 17 else "xiu"
-        
-        win_amount = 0
-        if outcome in items_bet:
-            win_amount = int(amount * 1.8) # Tỷ lệ 1 ăn 1.8
-            u['balance'] += win_amount
-            
-        return jsonify({
-            'success': True,
-            'message': f'Kết quả: {total_score} điểm ({outcome.upper()})',
-            'balance': u['balance'],
-            'result': result
-        })
+    data = load_data()
+    if user_id not in data:
+        return jsonify({'success': False, 'message': 'ID người dùng không tồn tại'})
+
+    u = data[user_id]
+    total_bet = amount_per_door * len(items_bet)
+    
+    total_bal = u.get('balance', 0) + u.get('locked_balance', 0)
+    if total_bet > total_bal:
+        return jsonify({'success': False, 'message': 'Số dư không đủ!'})
+
+    # --- TRỪ TIỀN ---
+    temp_bet = total_bet
+    if u.get('locked_balance', 0) >= temp_bet:
+        u['locked_balance'] -= temp_bet
     else:
-        # ... (Phần logic Bầu Cua hiện tại của bác) ...
+        rem = temp_bet - u.get('locked_balance', 0)
+        u['locked_balance'] = 0
+        u['balance'] -= rem
+
+    # --- QUAY KẾT QUẢ THEO TỪNG GAME ---
+    if game_type == 'tai-xiu':
+        # Xúc xắc 1-6
+        result = [random.randint(1, 6) for _ in range(3)]
+        tong_diem = sum(result)
+        # Xác định kết quả
+        outcome = "tai" if 11 <= tong_diem <= 17 else "xiu"
+        
+        win_total = 0
+        if outcome in items_bet:
+            win_total = int(amount_per_door * 1.8) # 1 ăn 1.8
+            u['balance'] += win_total
+            msg = f"Kết quả: {tong_diem} điểm ({outcome.upper()}). Chúc mừng bác húp tiền!"
+        else:
+            msg = f"Kết quả: {tong_diem} điểm ({outcome.upper()}). Tiếc quá bác ơi!"
+            
+    else: # GAME BẦU CUA
+        icons = ['bau', 'cua', 'tom', 'ca', 'ga', 'nai']
+        result = [random.choice(icons) for _ in range(3)]
+        
+        win_total = 0
+        for item in items_bet:
+            count = result.count(item)
+            if count > 0:
+                win_total += int(amount_per_door * 1.8 * count)
+        
+        if win_total > 0:
+            u['balance'] += win_total
+            msg = f"Chúc mừng bác húp lãi Bầu Cua!"
+        else:
+            msg = f"Hụt rồi, làm lại ván sau bác nhé!"
+
+    save_data(data)
+    return jsonify({
+        'success': True,
+        'message': msg,
+        'balance': u['balance'] + u.get('locked_balance', 0),
+        'result': result
+    })

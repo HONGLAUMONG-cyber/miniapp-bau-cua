@@ -3,64 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Casino Cỗ Máy In Tiền</title>
+    <title>Sòng Bài Hoàng Gia - Cỗ Máy In Tiền</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffcf4b; --bg: #0a0a0f; --red-casino: #630000; }
+        :root {
+            --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --gold-shadow: 0 0 15px rgba(191, 149, 63, 0.4);
+            --royal-red: radial-gradient(circle, #800000 0%, #4a0000 100%);
+            --bg-deep: #050505;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        body {
+            background-color: var(--bg-deep);
+            background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'), radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+            color: white; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        }
 
-        /* HEADER VÍ TIỀN */
-        .header { padding: 10px; display: flex; justify-content: center; background: rgba(0,0,0,0.8); z-index: 100; border-bottom: 1px solid #333; }
-        .balance-card { border: 2px solid var(--gold); padding: 6px 20px; border-radius: 50px; color: var(--gold); font-weight: 900; box-shadow: 0 0 15px rgba(255,207,75,0.2); }
+        /* --- VÍ TIỀN LUXURY --- */
+        .header { padding: 15px; display: flex; justify-content: center; z-index: 100; }
+        .balance-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #bf953f;
+            padding: 8px 25px;
+            border-radius: 50px;
+            color: #fcf6ba;
+            font-weight: 900;
+            font-size: 1.1rem;
+            box-shadow: var(--gold-shadow);
+            display: flex; align-items: center; gap: 10px;
+        }
 
-        /* NỘI DUNG GAME */
-        .game-container { flex: 1; position: relative; overflow-y: auto; padding-bottom: 100px; }
-        .tab-content { display: none; flex-direction: column; align-items: center; padding: 20px 15px; animation: fadeIn 0.3s ease; }
+        /* --- NỘI DUNG GAME --- */
+        .game-container { flex: 1; position: relative; overflow-y: auto; padding-bottom: 90px; }
+        .tab-content { display: none; flex-direction: column; align-items: center; padding: 10px 15px; animation: slideUp 0.4s ease; }
         .tab-content.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* BÁT ĐĨA 8D SIÊU THỰC */
-        .stage { position: relative; width: 280px; height: 260px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; }
-        .plate { width: 250px; height: 250px; background: #fff; border-radius: 50%; border: 10px solid #eee; box-shadow: 0 20px 50px rgba(0,0,0,0.9); background-image: radial-gradient(circle, transparent 60%, #3742fa 62%, #3742fa 64%, transparent 66%); }
-        .bowl { width: 190px; height: 120px; background: #222; border-radius: 100px 100px 30px 30px; position: absolute; top: 70px; z-index: 10; border: 4px solid #333; transition: 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55); cursor: pointer; box-shadow: inset 0 10px 20px rgba(255,255,255,0.1), 0 30px 50px rgba(0,0,0,0.8); }
-        .bowl.open { transform: translateY(-130px) rotate(-15deg); }
-        .dice-set { position: absolute; top: 125px; display: flex; gap: 8px; z-index: 5; }
-        .dice { width: 45px; height: 45px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 1px solid #ccc; box-shadow: 0 5px 10px rgba(0,0,0,0.3); }
+        /* --- BÁT ĐĨA 8D CỰC PHẨM --- */
+        .stage { position: relative; width: 300px; height: 280px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; }
+        .plate {
+            width: 260px; height: 260px;
+            background: #fff; border-radius: 50%;
+            border: 12px solid #ddd;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.2);
+            background-image: url('https://www.transparenttextures.com/patterns/parian-marble.png'), radial-gradient(circle, transparent 60%, #003366 62%, #003366 65%, transparent 67%);
+        }
+        .bowl {
+            width: 200px; height: 130px;
+            background: linear-gradient(145deg, #222, #000);
+            border-radius: 100px 100px 35px 35px;
+            position: absolute; top: 75px; z-index: 10;
+            border: 3px solid #bf953f;
+            box-shadow: inset 0 10px 20px rgba(255,255,255,0.1), 0 40px 80px rgba(0,0,0,1);
+            transition: 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+        }
+        .bowl.open { transform: translateY(-150px) rotate(-20deg) scale(0.9); opacity: 0.9; }
+        
+        .dice-set { position: absolute; top: 135px; display: flex; gap: 10px; z-index: 5; }
+        .dice {
+            width: 50px; height: 50px; background: #fff; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; border: 1px solid #ccc;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 -5px 10px #ddd;
+        }
 
-        /* GRID BẦU CUA */
-        .grid-bau-cua { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 400px; }
-        .item { background: rgba(255,255,255,0.05); padding: 15px 5px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; transition: 0.2s; }
-        .item.selected { border-color: var(--gold); background: rgba(255,207,75,0.15); transform: scale(0.95); }
-        .item .emoji { font-size: 2.5rem; display: block; margin-bottom: 5px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); }
-        .item .name { font-size: 0.7rem; font-weight: 900; color: #888; }
-        .item.selected .name { color: var(--gold); }
+        /* --- BÀN CƯỢC TÀI XỈU ROYAL --- */
+        .board-taixiu {
+            width: 100%; max-width: 420px;
+            background: var(--royal-red);
+            border: 3px solid #bf953f;
+            border-radius: 25px;
+            padding: 20px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        .door {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #bf953f;
+            border-radius: 15px;
+            padding: 25px 10px;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .door.selected {
+            background: var(--gold-gradient);
+            color: #000;
+            box-shadow: 0 0 30px #ffcf4b;
+            transform: scale(0.97);
+        }
+        .door h3 { font-family: 'Cinzel', serif; font-size: 2.2rem; margin-bottom: 5px; }
+        .door p { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* TÀI XỈU BOARD (VIDEO STYLE) */
-        .board-tai-xiu { width: 100%; max-width: 400px; background: var(--red-casino); border: 2px solid var(--gold); border-radius: 20px; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
-        .door { background: rgba(0,0,0,0.3); border: 1px solid var(--gold); border-radius: 12px; padding: 25px 10px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .door.selected { background: var(--gold); color: #000; box-shadow: 0 0 20px var(--gold); }
-        .door h3 { font-size: 2.2rem; font-weight: 900; margin-bottom: 5px; }
-        .door p { font-size: 0.8rem; font-weight: bold; opacity: 0.8; }
+        /* --- NÚT BẤM SHIMMER --- */
+        .btn-play {
+            width: 100%; max-width: 420px;
+            padding: 20px;
+            background: var(--gold-gradient);
+            border: none; border-radius: 18px;
+            color: #000; font-weight: 900; font-size: 1.2rem;
+            margin-top: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 15px 40px rgba(191, 149, 63, 0.4);
+            position: relative; overflow: hidden;
+        }
+        .btn-play::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer { 0% { transform: translateX(-150%) rotate(45deg); } 100% { transform: translateX(150%) rotate(45deg); } }
 
-        /* THANH MENU DƯỚI CÙNG */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #111; display: flex; border-top: 1px solid #333; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.3s; }
-        .nav-item.active { color: var(--gold); }
-        .nav-item .nav-icon { font-size: 1.5rem; margin-bottom: 4px; }
-        .nav-item span { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px; }
+        /* --- MENU BOTTOM --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; height: 80px;
+            background: #000; display: flex;
+            border-top: 2px solid #bf953f;
+            z-index: 1000;
+        }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; }
+        .nav-item.active { color: #fcf6ba; text-shadow: 0 0 10px #bf953f; }
+        .nav-icon { font-size: 1.6rem; margin-bottom: 5px; }
+        .nav-item span { font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; }
 
-        .btn-confirm { width: 100%; max-width: 400px; padding: 18px; background: linear-gradient(135deg, #ffcf4b, #ff9a00); border: none; border-radius: 15px; color: #000; font-weight: 900; font-size: 1.1rem; cursor: pointer; margin-top: 20px; box-shadow: 0 10px 25px rgba(255,154,0,0.4); text-transform: uppercase; }
-        .btn-confirm:active { transform: scale(0.98); }
-
-        .shaking { animation: rumble 0.12s infinite; }
-        @keyframes rumble { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(2px, 2px); } }
+        /* --- HIỆU ỨNG RUNG LẮC --- */
+        .shaking { animation: rumble 0.1s infinite; }
+        @keyframes rumble { 0% { transform: translate(3px, 3px); } 50% { transform: translate(-3px, -3px); } 100% { transform: translate(3px, 3px); } }
     </style>
 </head>
 <body>
 
-    <header><div class="balance-card" id="balance">Đang tải...</div></header>
+    <div class="header">
+        <div class="balance-card">
+            <img src="https://img.icons8.com/color/48/000000/gold-bars.png" width="22">
+            <span id="balance">LOADING...</span>
+        </div>
+    </div>
 
     <div class="game-container">
         <div id="tab-baucua" class="tab-content active">
@@ -71,42 +153,42 @@
                 </div>
                 <div class="bowl" id="bowl-bc"></div>
             </div>
-            <div class="grid-bau-cua">
-                <div class="item" onclick="toggleBet(this, 'bau')"><span class="emoji">🎃</span><span class="name">BẦU</span></div>
-                <div class="item" onclick="toggleBet(this, 'cua')"><span class="emoji">🦀</span><span class="name">CUA</span></div>
-                <div class="item" onclick="toggleBet(this, 'tom')"><span class="emoji">🦐</span><span class="name">TÔM</span></div>
-                <div class="item" onclick="toggleBet(this, 'ca')"><span class="emoji">🐟</span><span class="name">CÁ</span></div>
-                <div class="item" onclick="toggleBet(this, 'ga')"><span class="emoji">🐔</span><span class="name">GÀ</span></div>
-                <div class="item" onclick="toggleBet(this, 'nai')"><span class="emoji">🦌</span><span class="name">NAI</span></div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%;">
+                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'bau')"><h3>🎃</h3></div>
+                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'cua')"><h3>🦀</h3></div>
+                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'tom')"><h3>🦐</h3></div>
+                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'ca')"><h3>🐟</h3></div>
+                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'ga')"><h3>🐔</h3></div>
+                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'nai')"><h3>🦌</h3></div>
             </div>
-            <button class="btn-confirm" onclick="handlePlay('bau-cua')">Xác nhận đặt cược</button>
+            <button class="btn-play" onclick="handlePlay('bau-cua')">XÁC NHẬN CƯỢC</button>
         </div>
 
         <div id="tab-taixiu" class="tab-content">
             <div class="stage">
-                <div class="plate" style="background:#400; border-color:var(--gold);"></div>
+                <div class="plate" style="border-color: #bf953f; background-image: radial-gradient(circle, #222 0%, #000 100%);"></div>
                 <div class="dice-set" id="dice-tx">
                     <div class="dice">?</div><div class="dice">?</div><div class="dice">?</div>
                 </div>
-                <div class="bowl" id="bowl-tx" style="background:var(--gold);"></div>
+                <div class="bowl" id="bowl-tx" style="background: var(--gold-gradient);"></div>
             </div>
-            <div class="board-tai-xiu">
-                <div class="door" onclick="toggleBet(this, 'xiu')"><h3>XỈU</h3><p>4 - 10 (1 ăn 1.8)</p></div>
-                <div class="door" onclick="toggleBet(this, 'tai')"><h3>TÀI</h3><p>11 - 17 (1 ăn 1.8)</p></div>
+            <div class="board-taixiu">
+                <div class="door" onclick="toggleBet(this, 'xiu')"><h3>XỈU</h3><p>4 - 10 (1 ĂN 1.8)</p></div>
+                <div class="door" onclick="toggleBet(this, 'tai')"><h3>TÀI</h3><p>11 - 17 (1 ĂN 1.8)</p></div>
             </div>
-            <button class="btn-confirm" onclick="handlePlay('tai-xiu')">Xác nhận đặt cược</button>
+            <button class="btn-play" onclick="handlePlay('tai-xiu')">XÁC NHẬN CƯỢC</button>
         </div>
     </div>
 
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('tab-baucua', this)">
-            <div class="nav-icon">🎃</div><span>BẦU CUA</span>
+            <div class="nav-icon">🏆</div><span>BẦU CUA</span>
         </div>
         <div class="nav-item" onclick="switchTab('tab-taixiu', this)">
             <div class="nav-icon">🎲</div><span>TÀI XỈU</span>
         </div>
-        <div class="nav-item" onclick="tg.showAlert('Tính năng Đua Top đang phát triển!')">
-            <div class="nav-icon">🏆</div><span>ĐUA TOP</span>
+        <div class="nav-item" onclick="tg.showAlert('Coming Soon!')">
+            <div class="nav-icon">💰</div><span>ĐẠI GIA</span>
         </div>
     </nav>
 
@@ -117,24 +199,23 @@
         const icons = { 'bau':'🎃','cua':'🦀','tom':'🦐','ca':'🐟','ga':'🐔','nai':'🦌' };
         const apiUrl = 'https://shanghai-boom-missouri-gordon.trycloudflare.com';
 
-        // Lấy số dư ví
-        async function fetchBal() {
+        // Lấy số dư ban đầu
+        async function updateBal() {
             try {
                 let r = await fetch(`${apiUrl}/get-balance?user_id=${tg.initDataUnsafe?.user?.id || 7113504762}`);
                 let d = await r.json();
                 document.getElementById('balance').innerText = d.balance.toLocaleString() + 'đ';
             } catch(e) {}
         }
-        fetchBal();
+        updateBal();
 
         function switchTab(id, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             el.classList.add('active');
-            // Reset lựa chọn khi đổi tab
             selectedDoors = [];
-            document.querySelectorAll('.item, .door').forEach(i => i.classList.remove('selected'));
+            document.querySelectorAll('.door').forEach(i => i.classList.remove('selected'));
         }
 
         function toggleBet(el, door) {
@@ -144,17 +225,15 @@
             } else {
                 el.classList.add('selected');
                 selectedDoors.push(door);
-                tg.HapticFeedback.impactOccurred('light');
+                tg.HapticFeedback.impactOccurred('medium');
             }
         }
 
         async function handlePlay(type) {
-            if(selectedDoors.length === 0) return tg.showAlert("Bác ơi chọn cửa đã!");
+            if(selectedDoors.length === 0) return tg.showAlert("Chọn cửa đã bác ơi!");
             
-            const diceId = type === 'bau-cua' ? 'dice-bc' : 'dice-tx';
-            const bowlId = type === 'bau-cua' ? 'bowl-bc' : 'bowl-tx';
-            const bowl = document.getElementById(bowlId);
-            const diceBox = document.getElementById(diceId);
+            const bowl = document.getElementById(type === 'bau-cua' ? 'bowl-bc' : 'bowl-tx');
+            const diceBox = document.getElementById(type === 'bau-cua' ? 'dice-bc' : 'dice-tx');
 
             bowl.classList.remove('open');
             bowl.classList.add('shaking');
@@ -179,17 +258,17 @@
                     
                     if(data.success) {
                         data.result.forEach((r, i) => {
-                            document.getElementById(diceId).querySelectorAll('.dice')[i].innerText = type === 'bau-cua' ? icons[r] : r;
+                            diceBox.querySelectorAll('.dice')[i].innerText = type === 'bau-cua' ? icons[r] : r;
                         });
                         bowl.classList.add('open');
                         document.getElementById('balance').innerText = data.balance.toLocaleString() + 'đ';
-                        tg.showAlert(data.message || "Kết quả đã có!");
+                        tg.HapticFeedback.notificationOccurred('success');
                     } else {
-                        tg.showAlert(data.message || "Có lỗi xảy ra!");
+                        tg.showAlert(data.message);
                     }
-                }, 1200);
+                }, 1500);
             } catch(e) { 
-                tg.showAlert("Lỗi kết nối máy chủ!"); 
+                tg.showAlert("Lỗi máy chủ!"); 
                 bowl.classList.remove('shaking');
             }
         }

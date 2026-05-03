@@ -1,212 +1,31 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bau Cua Luxury - Cỗ Máy In Tiền</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Montserrat:wght@300;600;900&display=swap" rel="stylesheet">
-    <style>
-        :root { --gold: #ffcf4b; --blue: #3742fa; --bg: #05050a; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        body { background: var(--bg); color: white; min-height: 100vh; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+# Trong hàm api_place_bet() của bot.py:
+@api_app.route('/place-bet', methods=['POST'])
+def api_place_bet():
+    req = request.get_json()
+    game_type = req.get('game', 'bau-cua')
+    items_bet = req.get('items')
+    amount = req.get('amount')
+    
+    # ... (Phần trừ tiền giữ nguyên) ...
 
-        /* TIMER CASINO */
-        .timer-container {
-            position: relative; width: 80px; height: 80px; margin-bottom: 15px;
-        }
-        .timer-svg { transform: rotate(-90deg); width: 80px; height: 80px; }
-        .timer-circle {
-            fill: none; stroke: var(--gold); stroke-width: 5;
-            stroke-dasharray: 220; stroke-dashoffset: 0; transition: 1s linear;
-        }
-        .timer-text {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Goldman', sans-serif; font-size: 1.5rem; color: var(--gold);
-        }
-
-        /* BÁT ĐĨA GỐM SỨ 8D SIÊU THỰC */
-        .stage {
-            position: relative; width: 280px; height: 280px; margin-bottom: 20px;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .plate {
-            width: 280px; height: 280px; background: #fff; border-radius: 50%;
-            border: 10px solid #eee; box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.2);
-            background-image: radial-gradient(circle, transparent 60%, var(--blue) 62%, var(--blue) 64%, transparent 66%);
-        }
-        .bowl {
-            width: 210px; height: 140px; background: linear-gradient(135deg, #1e272e 0%, #000 100%);
-            border-radius: 105px 105px 40px 40px; position: absolute; z-index: 10;
-            top: 60px; border: 4px solid #333; cursor: pointer;
-            box-shadow: inset 0 10px 20px rgba(255,255,255,0.1), 0 30px 60px rgba(0,0,0,0.9);
-            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-        .bowl.open { transform: translateY(-140px) rotate(-20deg); }
-
-        .dice-set { position: absolute; top: 125px; display: flex; gap: 10px; z-index: 5; }
-        .dice {
-            width: 55px; height: 55px; background: #fff; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4); border: 1px solid #ddd;
-        }
-
-        /* GRID ĐẶT CƯỢC */
-        .bet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 400px; }
-        .item {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 18px; padding: 15px 0; text-align: center; cursor: pointer; position: relative;
-        }
-        .item.active { background: rgba(255, 207, 75, 0.2); border-color: var(--gold); }
-        .item .emoji { font-size: 2.8rem; display: block; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); }
-        .item .name { font-size: 0.7rem; font-weight: 900; color: #888; }
-        .item.active .name { color: var(--gold); }
-        .chip {
-            position: absolute; top: -5px; right: -5px; background: var(--gold); color: #000;
-            width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: 900;
-            display: none; align-items: center; justify-content: center; border: 2px solid #000;
-        }
-        .item.active .chip { display: flex; }
-
-        /* PANEL */
-        .panel { 
-            width: 100%; max-width: 400px; margin-top: 20px; background: rgba(255,255,255,0.05);
-            padding: 20px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1);
-        }
-        .balance-display { color: var(--gold); font-weight: 900; font-size: 1.3rem; text-align: center; margin-bottom: 15px; }
-        .input-group input {
-            width: 100%; background: #000; border: 1px solid #333; padding: 12px;
-            color: #fff; border-radius: 12px; text-align: center; font-size: 1.2rem; font-weight: 900; margin-bottom: 15px;
-        }
-        .btn-bet {
-            width: 100%; padding: 18px; background: linear-gradient(135deg, #ffcf4b 0%, #ff9a00 100%);
-            border: none; border-radius: 15px; font-weight: 900; font-size: 1.1rem; cursor: pointer;
-        }
-
-        /* HISTORY */
-        .hist-title { width: 100%; font-size: 0.7rem; font-weight: 900; color: #444; margin-top: 20px; text-transform: uppercase; }
-        .hist-row { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; width: 100%; }
-        .hist-card { background: #111; padding: 5px; border-radius: 10px; display: flex; gap: 3px; border: 1px solid #222; flex-shrink: 0; }
-
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            100% { transform: translate(1px, 1px) rotate(0deg); }
-        }
-        .shaking { animation: shake 0.1s infinite; }
-    </style>
-</head>
-<body>
-
-    <div class="timer-container">
-        <svg class="timer-svg"><circle class="timer-circle" cx="40" cy="40" r="35"></circle></svg>
-        <div class="timer-text" id="timer">30</div>
-    </div>
-
-    <div class="balance-display" id="balance">0đ</div>
-
-    <div class="stage">
-        <div class="plate"></div>
-        <div class="dice-set" id="dice-set">
-            <div class="dice">❓</div><div class="dice">❓</div><div class="dice">❓</div>
-        </div>
-        <div class="bowl" id="bowl"></div>
-    </div>
-
-    <div class="bet-grid">
-        <div class="item" onclick="toggle(this, 'bau')"><span class="chip">✔</span><span class="emoji">🎃</span><span class="name">BẦU</span></div>
-        <div class="item" onclick="toggle(this, 'cua')"><span class="chip">✔</span><span class="emoji">🦀</span><span class="name">CUA</span></div>
-        <div class="item" onclick="toggle(this, 'tom')"><span class="chip">✔</span><span class="emoji">🦐</span><span class="name">TÔM</span></div>
-        <div class="item" onclick="toggle(this, 'ca')"><span class="chip">✔</span><span class="emoji">🐟</span><span class="name">CÁ</span></div>
-        <div class="item" onclick="toggle(this, 'ga')"><span class="chip">✔</span><span class="emoji">🐔</span><span class="name">GÀ</span></div>
-        <div class="item" onclick="toggle(this, 'nai')"><span class="chip">✔</span><span class="emoji">🦌</span><span class="name">NAI</span></div>
-    </div>
-
-    <div class="panel">
-        <div class="input-group"><input type="number" id="amount" value="10000"></div>
-        <button class="btn-bet" id="btn-bet" onclick="placeBet()">XÁC NHẬN ĐẶT CƯỢC</button>
-    </div>
-
-    <div class="hist-title">🕒 Lịch sử phiên</div>
-    <div class="hist-row" id="hist-row"></div>
-
-    <script>
-        let tg = window.Telegram.WebApp; tg.expand();
-        let selected = [];
-        const icons = { 'bau':'🎃', 'cua':'🦀', 'tom':'🦐', 'ca':'🐟', 'ga':'🐔', 'nai':'🦌' };
-        const apiUrl = 'https://shanghai-boom-missouri-gordon.trycloudflare.com';
-
-        function toggle(el, item) {
-            if (el.classList.contains('active')) {
-                el.classList.remove('active');
-                selected = selected.filter(i => i !== item);
-            } else {
-                el.classList.add('active');
-                selected.push(item);
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
-
-        async function sync() {
-            try {
-                let r = await fetch(`${apiUrl}/get-game-state?user_id=${tg.initDataUnsafe?.user?.id || 7113504762}`);
-                let d = await r.json();
-                
-                document.getElementById('timer').innerText = d.timer;
-                document.getElementById('balance').innerText = d.balance.toLocaleString() + 'đ';
-                
-                // Cập nhật vòng tròn đếm ngược
-                let offset = 220 - (d.timer / 30) * 220;
-                document.querySelector('.timer-circle').style.strokeDashoffset = offset;
-
-                const bowl = document.getElementById('bowl');
-                const diceSet = document.getElementById('dice-set');
-
-                if (d.is_shaking) {
-                    bowl.classList.remove('open');
-                    bowl.classList.add('shaking');
-                    document.getElementById('btn-bet').disabled = true;
-                    document.getElementById('btn-bet').innerText = "ĐANG XÓC BÁT...";
-                } else {
-                    bowl.classList.remove('shaking');
-                    if (d.timer > 25) { // Vừa xóc xong
-                        d.last_result.forEach((res, i) => {
-                            document.querySelectorAll('.dice')[i].innerText = icons[res];
-                        });
-                        bowl.classList.add('open');
-                    } else {
-                        bowl.classList.remove('open');
-                        document.getElementById('btn-bet').disabled = false;
-                        document.getElementById('btn-bet').innerText = "XÁC NHẬN ĐẶT CƯỢC";
-                    }
-                }
-
-                // Lịch sử phiên
-                let hHtml = d.history.map(h => `<div class="hist-card">${h.map(x=>icons[x]).join('')}</div>`).join('');
-                document.getElementById('hist-row').innerHTML = hHtml;
-
-            } catch(e) {}
-        }
-
-        async function placeBet() {
-            let amt = parseInt(document.getElementById('amount').value);
-            if (selected.length === 0) return alert("Chọn cửa đã bác ơi!");
-            try {
-                let r = await fetch(`${apiUrl}/place-bet`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ user_id: tg.initDataUnsafe?.user?.id || 7113504762, items: selected, amount: amt })
-                });
-                let d = await r.json();
-                alert(d.message);
-                if(d.success) {
-                    document.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
-                    selected = [];
-                }
-            } catch(e) { alert("Lỗi kết nối!"); }
-        }
-
-        setInterval(sync, 1000);
-    </script>
-</body>
-</html>
+    if game_type == 'tai-xiu':
+        # Quay 3 xúc xắc từ 1-6
+        result = [random.randint(1, 6) for _ in range(3)]
+        total_score = sum(result)
+        
+        # Xác định Tài (11-17) hay Xỉu (4-10)
+        outcome = "tai" if 11 <= total_score <= 17 else "xiu"
+        
+        win_amount = 0
+        if outcome in items_bet:
+            win_amount = int(amount * 1.8) # Tỷ lệ 1 ăn 1.8
+            u['balance'] += win_amount
+            
+        return jsonify({
+            'success': True,
+            'message': f'Kết quả: {total_score} điểm ({outcome.upper()})',
+            'balance': u['balance'],
+            'result': result
+        })
+    else:
+        # ... (Phần logic Bầu Cua hiện tại của bác) ...

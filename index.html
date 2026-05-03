@@ -3,242 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sòng Bài Hoàng Gia - Cỗ Máy In Tiền</title>
+    <title>Casino Cỗ Máy In Tiền</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-            --gold-shadow: 0 0 15px rgba(191, 149, 63, 0.4);
-            --royal-red: radial-gradient(circle, #800000 0%, #4a0000 100%);
-            --bg-deep: #050505;
-        }
+        :root { --gold: #ffcf4b; --bg: #0a0a0f; --casino-red: #800000; --panel-red: #4a0404; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        body { background: var(--bg); color: white; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            background-color: var(--bg-deep);
-            background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'), radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
-            color: white; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column;
-        }
+        /* --- VÍ TIỀN --- */
+        .wallet-header { padding: 10px; display: flex; justify-content: center; background: rgba(0,0,0,0.7); z-index: 100; }
+        .wallet-card { border: 2px solid var(--gold); padding: 5px 20px; border-radius: 50px; color: var(--gold); font-weight: 900; background: rgba(0,0,0,0.5); }
 
-        /* --- VÍ TIỀN LUXURY --- */
-        .header { padding: 15px; display: flex; justify-content: center; z-index: 100; }
-        .balance-card {
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #bf953f;
-            padding: 8px 25px;
-            border-radius: 50px;
-            color: #fcf6ba;
-            font-weight: 900;
-            font-size: 1.1rem;
-            box-shadow: var(--gold-shadow);
-            display: flex; align-items: center; gap: 10px;
-        }
-
-        /* --- NỘI DUNG GAME --- */
-        .game-container { flex: 1; position: relative; overflow-y: auto; padding-bottom: 90px; }
-        .tab-content { display: none; flex-direction: column; align-items: center; padding: 10px 15px; animation: slideUp 0.4s ease; }
+        /* --- GAME CONTENT --- */
+        .tab-content { display: none; flex: 1; overflow-y: auto; padding: 10px; flex-direction: column; align-items: center; padding-bottom: 80px; }
         .tab-content.active { display: flex; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- BÁT ĐĨA 8D CỰC PHẨM --- */
-        .stage { position: relative; width: 300px; height: 280px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; }
-        .plate {
-            width: 260px; height: 260px;
-            background: #fff; border-radius: 50%;
-            border: 12px solid #ddd;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.2);
-            background-image: url('https://www.transparenttextures.com/patterns/parian-marble.png'), radial-gradient(circle, transparent 60%, #003366 62%, #003366 65%, transparent 67%);
-        }
-        .bowl {
-            width: 200px; height: 130px;
-            background: linear-gradient(145deg, #222, #000);
-            border-radius: 100px 100px 35px 35px;
-            position: absolute; top: 75px; z-index: 10;
-            border: 3px solid #bf953f;
-            box-shadow: inset 0 10px 20px rgba(255,255,255,0.1), 0 40px 80px rgba(0,0,0,1);
-            transition: 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045);
-        }
-        .bowl.open { transform: translateY(-150px) rotate(-20deg) scale(0.9); opacity: 0.9; }
+        /* --- TÀI XỈU LUXURY STYLE --- */
+        .dealer-area { width: 100%; height: 180px; position: relative; background: url('https://img.freepik.com/free-photo/beautiful-girl-casino_1157-14731.jpg') center/cover; display: flex; justify-content: center; align-items: flex-end; border-radius: 15px; margin-bottom: 10px; }
+        .dealer-area::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--bg) 10%, transparent 70%); }
         
-        .dice-set { position: absolute; top: 135px; display: flex; gap: 10px; z-index: 5; }
-        .dice {
-            width: 50px; height: 50px; background: #fff; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; border: 1px solid #ccc;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 -5px 10px #ddd;
-        }
+        .timer-circle-box { position: relative; width: 60px; height: 60px; z-index: 10; margin-bottom: 10px; }
+        .timer-svg { transform: rotate(-90deg); width: 60px; height: 60px; }
+        .timer-circle { fill: none; stroke: var(--gold); stroke-width: 5; stroke-dasharray: 180; stroke-dashoffset: 0; transition: 1s linear; }
+        .timer-val { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.2rem; color: var(--gold); }
 
-        /* --- BÀN CƯỢC TÀI XỈU ROYAL --- */
-        .board-taixiu {
-            width: 100%; max-width: 420px;
-            background: var(--royal-red);
-            border: 3px solid #bf953f;
-            border-radius: 25px;
-            padding: 20px;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.5);
-        }
-        .door {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid #bf953f;
-            border-radius: 15px;
-            padding: 25px 10px;
-            text-align: center;
-            transition: 0.3s;
-        }
-        .door.selected {
-            background: var(--gold-gradient);
-            color: #000;
-            box-shadow: 0 0 30px #ffcf4b;
-            transform: scale(0.97);
-        }
-        .door h3 { font-family: 'Cinzel', serif; font-size: 2.2rem; margin-bottom: 5px; }
-        .door p { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .bowl-tx { width: 120px; height: 80px; background: var(--gold); border-radius: 60px 60px 20px 20px; position: absolute; z-index: 20; top: 50px; border: 3px solid #b8860b; transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .bowl-tx.open { transform: translateY(-80px) rotate(-15deg); }
 
-        /* --- NÚT BẤM SHIMMER --- */
-        .btn-play {
-            width: 100%; max-width: 420px;
-            padding: 20px;
-            background: var(--gold-gradient);
-            border: none; border-radius: 18px;
-            color: #000; font-weight: 900; font-size: 1.2rem;
-            margin-top: 25px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            box-shadow: 0 15px 40px rgba(191, 149, 63, 0.4);
-            position: relative; overflow: hidden;
-        }
-        .btn-play::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
-            transform: rotate(45deg);
-            animation: shimmer 3s infinite;
-        }
-        @keyframes shimmer { 0% { transform: translateX(-150%) rotate(45deg); } 100% { transform: translateX(150%) rotate(45deg); } }
+        /* BẢNG CƯỢC TÀI XỈU */
+        .tx-board { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--panel-red); padding: 10px; border: 1px solid var(--gold); border-radius: 12px; }
+        .bet-main { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,207,75,0.4); padding: 15px; text-align: center; border-radius: 10px; cursor: pointer; position: relative; }
+        .bet-main.active { border-color: var(--gold); background: rgba(255,207,75,0.1); }
+        .bet-main h2 { font-size: 1.8rem; color: var(--gold); font-weight: 900; }
+        .bet-main .odds { font-size: 0.7rem; color: #fff; margin-top: 5px; opacity: 0.8; }
 
-        /* --- MENU BOTTOM --- */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%; height: 80px;
-            background: #000; display: flex;
-            border-top: 2px solid #bf953f;
-            z-index: 1000;
-        }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; }
-        .nav-item.active { color: #fcf6ba; text-shadow: 0 0 10px #bf953f; }
-        .nav-icon { font-size: 1.6rem; margin-bottom: 5px; }
-        .nav-item span { font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; }
+        .number-grid { grid-column: span 2; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 5px; }
+        .num-box { background: #600; border: 1px solid rgba(255,255,255,0.1); padding: 6px 0; border-radius: 4px; text-align: center; font-size: 0.65rem; cursor: pointer; }
+        .num-box b { display: block; font-size: 0.9rem; color: var(--gold); }
 
-        /* --- HIỆU ỨNG RUNG LẮC --- */
-        .shaking { animation: rumble 0.1s infinite; }
-        @keyframes rumble { 0% { transform: translate(3px, 3px); } 50% { transform: translate(-3px, -3px); } 100% { transform: translate(3px, 3px); } }
+        /* --- BẦU CUA --- */
+        .plate-bc { width: 220px; height: 220px; background: #fff; border-radius: 50%; border: 8px solid #ddd; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 15px 30px rgba(0,0,0,0.8); }
+        .bowl-bc { width: 180px; height: 110px; background: #222; border-radius: 90px 90px 30px 30px; position: absolute; top: 40px; z-index: 20; border: 3px solid #444; transition: 0.6s ease; }
+        .bowl-bc.open { transform: translateY(-100px) rotate(-15deg); }
+        .dice-set { position: absolute; top: 100px; display: flex; gap: 8px; z-index: 10; }
+        .dice { width: 45px; height: 45px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #000; box-shadow: 0 5px 10px rgba(0,0,0,0.3); }
+
+        .grid-bc { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-top: 20px; }
+        .item-bc { background: rgba(255,255,255,0.05); padding: 15px 5px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; }
+        .item-bc.active { border-color: var(--gold); background: rgba(255,207,75,0.1); }
+        .item-bc .emoji { font-size: 2.2rem; }
+        .item-bc .chip { position: absolute; top: -5px; right: -5px; background: var(--gold); color: #000; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: 900; display: none; align-items: center; justify-content: center; border: 2px solid #000; }
+        .item-bc.active .chip { display: flex; }
+
+        /* --- CHIP SELECTOR --- */
+        .chip-row { width: 100%; display: flex; justify-content: center; gap: 10px; padding: 15px 0; }
+        .chip-btn { width: 45px; height: 45px; border-radius: 50%; border: 3px dashed white; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900; color: white; cursor: pointer; transition: 0.2s; }
+        .chip-btn.active { transform: translateY(-8px); border-style: solid; border-color: var(--gold); box-shadow: 0 5px 15px rgba(255,207,75,0.4); }
+        .c-5k { background: #1abc9c; } .c-10k { background: #3498db; } .c-50k { background: #9b59b6; } .c-100k { background: #e67e22; }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #111; display: flex; border-top: 1px solid #333; z-index: 1000; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #555; }
+        .nav-item.active { color: var(--gold); }
+        .nav-item i { font-size: 1.5rem; }
+        .nav-item span { font-size: 0.65rem; font-weight: bold; margin-top: 4px; }
+
+        .btn-confirm { width: 90%; padding: 14px; background: linear-gradient(to bottom, #ffcf4b, #ff9a00); border: none; border-radius: 12px; font-weight: 900; margin: 10px 0; cursor: pointer; color: #000; text-transform: uppercase; }
+        
+        .history-dots { width: 100%; display: flex; gap: 4px; justify-content: center; padding: 5px; overflow-x: auto; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid white; flex-shrink: 0; }
+        .dot.tai { background: #e74c3c; } .dot.xiu { background: #3498db; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="balance-card">
-            <img src="https://img.icons8.com/color/48/000000/gold-bars.png" width="22">
-            <span id="balance">LOADING...</span>
-        </div>
+    <div class="wallet-header">
+        <div class="wallet-card" id="balance">0đ</div>
     </div>
 
-    <div class="game-container">
-        <div id="tab-baucua" class="tab-content active">
-            <div class="stage">
-                <div class="plate"></div>
+    <!-- TÀI XỈU TAB -->
+    <div id="tai-xiu" class="tab-content active">
+        <div class="dealer-area">
+            <div class="timer-circle-box">
+                <svg class="timer-svg"><circle class="timer-circle" cx="30" cy="30" r="27"></circle></svg>
+                <div class="timer-val" id="tx-timer">30</div>
+            </div>
+            <div class="bowl-tx" id="bowl-tx"></div>
+            <div class="dice-set" id="dice-tx" style="top: 110px;">
+                <div class="dice">?</div><div class="dice">?</div><div class="dice">?</div>
+            </div>
+        </div>
+
+        <div class="tx-board">
+            <div class="bet-main" onclick="selectDoor(this, 'xiu')">
+                <h2>XỈU</h2><p>4-10</p><div class="odds">1 : 1.995</div>
+            </div>
+            <div class="bet-main" onclick="selectDoor(this, 'tai')">
+                <h2>TÀI</h2><p>11-17</p><div class="odds">1 : 1.995</div>
+            </div>
+            <div class="number-grid" id="tx-numbers"></div>
+        </div>
+        
+        <div class="history-dots" id="tx-history"></div>
+        <div class="chip-row">
+            <div class="chip-btn c-5k active" onclick="selectChip(this, 5000)">5K</div>
+            <div class="chip-btn c-10k" onclick="selectChip(this, 10000)">10K</div>
+            <div class="chip-btn c-50k" onclick="selectChip(this, 50000)">50K</div>
+            <div class="chip-btn c-100k" onclick="selectChip(this, 100000)">100K</div>
+        </div>
+        <button class="btn-confirm" onclick="placeBet('tai-xiu')">XÁC NHẬN ĐẶT CƯỢC</button>
+    </div>
+
+    <!-- BẦU CUA TAB -->
+    <div id="bau-cua" class="tab-content">
+        <div style="height: 250px; display:flex; align-items:center; position:relative;">
+            <div class="plate-bc">
                 <div class="dice-set" id="dice-bc">
                     <div class="dice">❓</div><div class="dice">❓</div><div class="dice">❓</div>
                 </div>
-                <div class="bowl" id="bowl-bc"></div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%;">
-                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'bau')"><h3>🎃</h3></div>
-                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'cua')"><h3>🦀</h3></div>
-                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'tom')"><h3>🦐</h3></div>
-                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'ca')"><h3>🐟</h3></div>
-                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'ga')"><h3>🐔</h3></div>
-                <div class="door" style="padding: 15px 0;" onclick="toggleBet(this, 'nai')"><h3>🦌</h3></div>
-            </div>
-            <button class="btn-play" onclick="handlePlay('bau-cua')">XÁC NHẬN CƯỢC</button>
+            <div class="bowl-bc" id="bowl-bc"></div>
         </div>
 
-        <div id="tab-taixiu" class="tab-content">
-            <div class="stage">
-                <div class="plate" style="border-color: #bf953f; background-image: radial-gradient(circle, #222 0%, #000 100%);"></div>
-                <div class="dice-set" id="dice-tx">
-                    <div class="dice">?</div><div class="dice">?</div><div class="dice">?</div>
-                </div>
-                <div class="bowl" id="bowl-tx" style="background: var(--gold-gradient);"></div>
-            </div>
-            <div class="board-taixiu">
-                <div class="door" onclick="toggleBet(this, 'xiu')"><h3>XỈU</h3><p>4 - 10 (1 ĂN 1.8)</p></div>
-                <div class="door" onclick="toggleBet(this, 'tai')"><h3>TÀI</h3><p>11 - 17 (1 ĂN 1.8)</p></div>
-            </div>
-            <button class="btn-play" onclick="handlePlay('tai-xiu')">XÁC NHẬN CƯỢC</button>
+        <div class="grid-bc">
+            <div class="item-bc" onclick="selectDoor(this, 'bau')"><span class="chip">✔</span><div class="emoji">🎃</div></div>
+            <div class="item-bc" onclick="selectDoor(this, 'cua')"><span class="chip">✔</span><div class="emoji">🦀</div></div>
+            <div class="item-bc" onclick="selectDoor(this, 'tom')"><span class="chip">✔</span><div class="emoji">🦐</div></div>
+            <div class="item-bc" onclick="selectDoor(this, 'ca')"><span class="chip">✔</span><div class="emoji">🐟</div></div>
+            <div class="item-bc" onclick="selectDoor(this, 'ga')"><span class="chip">✔</span><div class="emoji">🐔</div></div>
+            <div class="item-bc" onclick="selectDoor(this, 'nai')"><span class="chip">✔</span><div class="emoji">🦌</div></div>
         </div>
+        <button class="btn-confirm" style="margin-top:20px;" onclick="placeBet('bau-cua')">XÁC NHẬN ĐẶT CƯỢC</button>
     </div>
 
+    <!-- MENU ĐIỀU HƯỚNG -->
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('tab-baucua', this)">
-            <div class="nav-icon">🏆</div><span>BẦU CUA</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('tab-taixiu', this)">
-            <div class="nav-icon">🎲</div><span>TÀI XỈU</span>
-        </div>
-        <div class="nav-item" onclick="tg.showAlert('Coming Soon!')">
-            <div class="nav-icon">💰</div><span>ĐẠI GIA</span>
-        </div>
+        <div class="nav-item active" onclick="switchTab('tai-xiu', this)"><i>🎲</i><span>TÀI XỈU</span></div>
+        <div class="nav-item" onclick="switchTab('bau-cua', this)"><i>🎃</i><span>BẦU CUA</span></div>
+        <div class="nav-item"><i>🏦</i><span>NẠP TIỀN</span></div>
+        <div class="nav-item"><i>👤</i><span>CÁ NHÂN</span></div>
     </nav>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
         let selectedDoors = [];
+        let currentChip = 5000;
         const icons = { 'bau':'🎃','cua':'🦀','tom':'🦐','ca':'🐟','ga':'🐔','nai':'🦌' };
         const apiUrl = 'https://shanghai-boom-missouri-gordon.trycloudflare.com';
 
-        // Lấy số dư ban đầu
-        async function updateBal() {
-            try {
-                let r = await fetch(`${apiUrl}/get-balance?user_id=${tg.initDataUnsafe?.user?.id || 7113504762}`);
-                let d = await r.json();
-                document.getElementById('balance').innerText = d.balance.toLocaleString() + 'đ';
-            } catch(e) {}
+        // Render bảng số Tài Xỉu
+        const numGrid = document.getElementById('tx-numbers');
+        for (let i = 4; i <= 17; i++) {
+            numGrid.innerHTML += `<div class="num-box" onclick="selectDoor(this, '${i}')"><b>${i}</b>1:14</div>`;
         }
-        updateBal();
 
-        function switchTab(id, el) {
+        function switchTab(tabId, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
             el.classList.add('active');
             selectedDoors = [];
-            document.querySelectorAll('.door').forEach(i => i.classList.remove('selected'));
+            document.querySelectorAll('.bet-main, .num-box, .item-bc').forEach(i => i.classList.remove('active'));
         }
 
-        function toggleBet(el, door) {
-            if(el.classList.contains('selected')) {
-                el.classList.remove('selected');
+        function selectChip(el, val) {
+            document.querySelectorAll('.chip-btn').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            currentChip = val;
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function selectDoor(el, door) {
+            if(el.classList.contains('active')) {
+                el.classList.remove('active');
                 selectedDoors = selectedDoors.filter(d => d !== door);
             } else {
-                el.classList.add('selected');
+                el.classList.add('active');
                 selectedDoors.push(door);
-                tg.HapticFeedback.impactOccurred('medium');
             }
         }
 
-        async function handlePlay(type) {
-            if(selectedDoors.length === 0) return tg.showAlert("Chọn cửa đã bác ơi!");
-            
-            const bowl = document.getElementById(type === 'bau-cua' ? 'bowl-bc' : 'bowl-tx');
-            const diceBox = document.getElementById(type === 'bau-cua' ? 'dice-bc' : 'dice-tx');
+        async function syncGame() {
+            try {
+                let res = await fetch(`${apiUrl}/get-game-state?user_id=${tg.initDataUnsafe?.user?.id || 7113504762}`);
+                let data = await res.json();
+                
+                document.getElementById('tx-timer').innerText = data.timer;
+                document.getElementById('balance').innerText = data.balance.toLocaleString() + 'đ';
+                
+                let offset = 180 - (data.timer / 30) * 180;
+                document.querySelector('.timer-circle').style.strokeDashoffset = offset;
 
-            bowl.classList.remove('open');
-            bowl.classList.add('shaking');
-            diceBox.classList.add('shaking');
+                // Đồng bộ kết quả & Bát
+                const bowlTx = document.getElementById('bowl-tx');
+                const bowlBc = document.getElementById('bowl-bc');
 
+                if (data.is_shaking) {
+                    bowlTx.classList.remove('open');
+                    bowlBc.classList.remove('open');
+                } else if (data.timer > 24) {
+                    // Cập nhật xúc xắc Tài Xỉu
+                    data.last_result.forEach((r, i) => {
+                        const txDices = document.getElementById('dice-tx').querySelectorAll('.dice');
+                        const bcDices = document.getElementById('dice-bc').querySelectorAll('.dice');
+                        if(txDices[i]) txDices[i].innerText = (typeof r === 'number') ? r : '?';
+                        if(bcDices[i]) bcDices[i].innerText = icons[r] || '❓';
+                    });
+                    bowlTx.classList.add('open');
+                    bowlBc.classList.add('open');
+                } else {
+                    bowlTx.classList.remove('open');
+                    bowlBc.classList.remove('open');
+                }
+
+                // Cập nhật lịch sử chấm tròn
+                const hist = document.getElementById('tx-history');
+                hist.innerHTML = data.history.map(h => {
+                    let sum = (typeof h[0] === 'number') ? h.reduce((a,b)=>a+b) : 0;
+                    return `<div class="dot ${sum >= 11 ? 'tai' : 'xiu'}"></div>`;
+                }).join('');
+
+            } catch(e) {}
+        }
+
+        async function placeBet(game) {
+            if(selectedDoors.length === 0) return tg.showAlert("Bác chưa chọn cửa kìa!");
             try {
                 let res = await fetch(`${apiUrl}/place-bet`, {
                     method: 'POST',
@@ -246,32 +237,20 @@
                     body: JSON.stringify({
                         user_id: tg.initDataUnsafe?.user?.id || 7113504762,
                         items: selectedDoors,
-                        amount: 10000,
-                        game: type
+                        amount: currentChip,
+                        game: game
                     })
                 });
                 let data = await res.json();
-
-                setTimeout(() => {
-                    bowl.classList.remove('shaking');
-                    diceBox.classList.remove('shaking');
-                    
-                    if(data.success) {
-                        data.result.forEach((r, i) => {
-                            diceBox.querySelectorAll('.dice')[i].innerText = type === 'bau-cua' ? icons[r] : r;
-                        });
-                        bowl.classList.add('open');
-                        document.getElementById('balance').innerText = data.balance.toLocaleString() + 'đ';
-                        tg.HapticFeedback.notificationOccurred('success');
-                    } else {
-                        tg.showAlert(data.message);
-                    }
-                }, 1500);
-            } catch(e) { 
-                tg.showAlert("Lỗi máy chủ!"); 
-                bowl.classList.remove('shaking');
-            }
+                tg.showAlert(data.message || "Đặt cược thành công!");
+                if(data.success) {
+                    document.querySelectorAll('.bet-main, .num-box, .item-bc').forEach(i => i.classList.remove('active'));
+                    selectedDoors = [];
+                }
+            } catch(e) { tg.showAlert("Lỗi kết nối!"); }
         }
+
+        setInterval(syncGame, 1000);
     </script>
 </body>
 </html>

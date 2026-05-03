@@ -1,67 +1,198 @@
-@api_app.route('/place-bet', methods=['POST'])
-def api_place_bet():
-    req = request.get_json()
-    user_id = str(req.get('user_id'))
-    game_type = req.get('game', 'bau-cua') # Nhận loại game từ Web gửi sang
-    items_bet = req.get('items')
-    amount_per_door = req.get('amount', 0)
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Casino Cỗ Máy In Tiền</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #ffcf4b; --bg: #0a0a0f; --red-casino: #630000; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: white; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-    data = load_data()
-    if user_id not in data:
-        return jsonify({'success': False, 'message': 'ID người dùng không tồn tại'})
+        /* HEADER VÍ TIỀN */
+        .header { padding: 10px; display: flex; justify-content: center; background: rgba(0,0,0,0.8); z-index: 100; border-bottom: 1px solid #333; }
+        .balance-card { border: 2px solid var(--gold); padding: 6px 20px; border-radius: 50px; color: var(--gold); font-weight: 900; box-shadow: 0 0 15px rgba(255,207,75,0.2); }
 
-    u = data[user_id]
-    total_bet = amount_per_door * len(items_bet)
-    
-    total_bal = u.get('balance', 0) + u.get('locked_balance', 0)
-    if total_bet > total_bal:
-        return jsonify({'success': False, 'message': 'Số dư không đủ!'})
+        /* NỘI DUNG GAME */
+        .game-container { flex: 1; position: relative; overflow-y: auto; padding-bottom: 100px; }
+        .tab-content { display: none; flex-direction: column; align-items: center; padding: 20px 15px; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    # --- TRỪ TIỀN ---
-    temp_bet = total_bet
-    if u.get('locked_balance', 0) >= temp_bet:
-        u['locked_balance'] -= temp_bet
-    else:
-        rem = temp_bet - u.get('locked_balance', 0)
-        u['locked_balance'] = 0
-        u['balance'] -= rem
+        /* BÁT ĐĨA 8D SIÊU THỰC */
+        .stage { position: relative; width: 280px; height: 260px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; }
+        .plate { width: 250px; height: 250px; background: #fff; border-radius: 50%; border: 10px solid #eee; box-shadow: 0 20px 50px rgba(0,0,0,0.9); background-image: radial-gradient(circle, transparent 60%, #3742fa 62%, #3742fa 64%, transparent 66%); }
+        .bowl { width: 190px; height: 120px; background: #222; border-radius: 100px 100px 30px 30px; position: absolute; top: 70px; z-index: 10; border: 4px solid #333; transition: 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55); cursor: pointer; box-shadow: inset 0 10px 20px rgba(255,255,255,0.1), 0 30px 50px rgba(0,0,0,0.8); }
+        .bowl.open { transform: translateY(-130px) rotate(-15deg); }
+        .dice-set { position: absolute; top: 125px; display: flex; gap: 8px; z-index: 5; }
+        .dice { width: 45px; height: 45px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 1px solid #ccc; box-shadow: 0 5px 10px rgba(0,0,0,0.3); }
 
-    # --- QUAY KẾT QUẢ THEO TỪNG GAME ---
-    if game_type == 'tai-xiu':
-        # Xúc xắc 1-6
-        result = [random.randint(1, 6) for _ in range(3)]
-        tong_diem = sum(result)
-        # Xác định kết quả
-        outcome = "tai" if 11 <= tong_diem <= 17 else "xiu"
-        
-        win_total = 0
-        if outcome in items_bet:
-            win_total = int(amount_per_door * 1.8) # 1 ăn 1.8
-            u['balance'] += win_total
-            msg = f"Kết quả: {tong_diem} điểm ({outcome.upper()}). Chúc mừng bác húp tiền!"
-        else:
-            msg = f"Kết quả: {tong_diem} điểm ({outcome.upper()}). Tiếc quá bác ơi!"
+        /* GRID BẦU CUA */
+        .grid-bau-cua { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 400px; }
+        .item { background: rgba(255,255,255,0.05); padding: 15px 5px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; transition: 0.2s; }
+        .item.selected { border-color: var(--gold); background: rgba(255,207,75,0.15); transform: scale(0.95); }
+        .item .emoji { font-size: 2.5rem; display: block; margin-bottom: 5px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); }
+        .item .name { font-size: 0.7rem; font-weight: 900; color: #888; }
+        .item.selected .name { color: var(--gold); }
+
+        /* TÀI XỈU BOARD (VIDEO STYLE) */
+        .board-tai-xiu { width: 100%; max-width: 400px; background: var(--red-casino); border: 2px solid var(--gold); border-radius: 20px; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
+        .door { background: rgba(0,0,0,0.3); border: 1px solid var(--gold); border-radius: 12px; padding: 25px 10px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .door.selected { background: var(--gold); color: #000; box-shadow: 0 0 20px var(--gold); }
+        .door h3 { font-size: 2.2rem; font-weight: 900; margin-bottom: 5px; }
+        .door p { font-size: 0.8rem; font-weight: bold; opacity: 0.8; }
+
+        /* THANH MENU DƯỚI CÙNG */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #111; display: flex; border-top: 1px solid #333; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.3s; }
+        .nav-item.active { color: var(--gold); }
+        .nav-item .nav-icon { font-size: 1.5rem; margin-bottom: 4px; }
+        .nav-item span { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px; }
+
+        .btn-confirm { width: 100%; max-width: 400px; padding: 18px; background: linear-gradient(135deg, #ffcf4b, #ff9a00); border: none; border-radius: 15px; color: #000; font-weight: 900; font-size: 1.1rem; cursor: pointer; margin-top: 20px; box-shadow: 0 10px 25px rgba(255,154,0,0.4); text-transform: uppercase; }
+        .btn-confirm:active { transform: scale(0.98); }
+
+        .shaking { animation: rumble 0.12s infinite; }
+        @keyframes rumble { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(2px, 2px); } }
+    </style>
+</head>
+<body>
+
+    <header><div class="balance-card" id="balance">Đang tải...</div></header>
+
+    <div class="game-container">
+        <div id="tab-baucua" class="tab-content active">
+            <div class="stage">
+                <div class="plate"></div>
+                <div class="dice-set" id="dice-bc">
+                    <div class="dice">❓</div><div class="dice">❓</div><div class="dice">❓</div>
+                </div>
+                <div class="bowl" id="bowl-bc"></div>
+            </div>
+            <div class="grid-bau-cua">
+                <div class="item" onclick="toggleBet(this, 'bau')"><span class="emoji">🎃</span><span class="name">BẦU</span></div>
+                <div class="item" onclick="toggleBet(this, 'cua')"><span class="emoji">🦀</span><span class="name">CUA</span></div>
+                <div class="item" onclick="toggleBet(this, 'tom')"><span class="emoji">🦐</span><span class="name">TÔM</span></div>
+                <div class="item" onclick="toggleBet(this, 'ca')"><span class="emoji">🐟</span><span class="name">CÁ</span></div>
+                <div class="item" onclick="toggleBet(this, 'ga')"><span class="emoji">🐔</span><span class="name">GÀ</span></div>
+                <div class="item" onclick="toggleBet(this, 'nai')"><span class="emoji">🦌</span><span class="name">NAI</span></div>
+            </div>
+            <button class="btn-confirm" onclick="handlePlay('bau-cua')">Xác nhận đặt cược</button>
+        </div>
+
+        <div id="tab-taixiu" class="tab-content">
+            <div class="stage">
+                <div class="plate" style="background:#400; border-color:var(--gold);"></div>
+                <div class="dice-set" id="dice-tx">
+                    <div class="dice">?</div><div class="dice">?</div><div class="dice">?</div>
+                </div>
+                <div class="bowl" id="bowl-tx" style="background:var(--gold);"></div>
+            </div>
+            <div class="board-tai-xiu">
+                <div class="door" onclick="toggleBet(this, 'xiu')"><h3>XỈU</h3><p>4 - 10 (1 ăn 1.8)</p></div>
+                <div class="door" onclick="toggleBet(this, 'tai')"><h3>TÀI</h3><p>11 - 17 (1 ăn 1.8)</p></div>
+            </div>
+            <button class="btn-confirm" onclick="handlePlay('tai-xiu')">Xác nhận đặt cược</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('tab-baucua', this)">
+            <div class="nav-icon">🎃</div><span>BẦU CUA</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('tab-taixiu', this)">
+            <div class="nav-icon">🎲</div><span>TÀI XỈU</span>
+        </div>
+        <div class="nav-item" onclick="tg.showAlert('Tính năng Đua Top đang phát triển!')">
+            <div class="nav-icon">🏆</div><span>ĐUA TOP</span>
+        </div>
+    </nav>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        let selectedDoors = [];
+        const icons = { 'bau':'🎃','cua':'🦀','tom':'🦐','ca':'🐟','ga':'🐔','nai':'🦌' };
+        const apiUrl = 'https://shanghai-boom-missouri-gordon.trycloudflare.com';
+
+        // Lấy số dư ví
+        async function fetchBal() {
+            try {
+                let r = await fetch(`${apiUrl}/get-balance?user_id=${tg.initDataUnsafe?.user?.id || 7113504762}`);
+                let d = await r.json();
+                document.getElementById('balance').innerText = d.balance.toLocaleString() + 'đ';
+            } catch(e) {}
+        }
+        fetchBal();
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+            // Reset lựa chọn khi đổi tab
+            selectedDoors = [];
+            document.querySelectorAll('.item, .door').forEach(i => i.classList.remove('selected'));
+        }
+
+        function toggleBet(el, door) {
+            if(el.classList.contains('selected')) {
+                el.classList.remove('selected');
+                selectedDoors = selectedDoors.filter(d => d !== door);
+            } else {
+                el.classList.add('selected');
+                selectedDoors.push(door);
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        async function handlePlay(type) {
+            if(selectedDoors.length === 0) return tg.showAlert("Bác ơi chọn cửa đã!");
             
-    else: # GAME BẦU CUA
-        icons = ['bau', 'cua', 'tom', 'ca', 'ga', 'nai']
-        result = [random.choice(icons) for _ in range(3)]
-        
-        win_total = 0
-        for item in items_bet:
-            count = result.count(item)
-            if count > 0:
-                win_total += int(amount_per_door * 1.8 * count)
-        
-        if win_total > 0:
-            u['balance'] += win_total
-            msg = f"Chúc mừng bác húp lãi Bầu Cua!"
-        else:
-            msg = f"Hụt rồi, làm lại ván sau bác nhé!"
+            const diceId = type === 'bau-cua' ? 'dice-bc' : 'dice-tx';
+            const bowlId = type === 'bau-cua' ? 'bowl-bc' : 'bowl-tx';
+            const bowl = document.getElementById(bowlId);
+            const diceBox = document.getElementById(diceId);
 
-    save_data(data)
-    return jsonify({
-        'success': True,
-        'message': msg,
-        'balance': u['balance'] + u.get('locked_balance', 0),
-        'result': result
-    })
+            bowl.classList.remove('open');
+            bowl.classList.add('shaking');
+            diceBox.classList.add('shaking');
+
+            try {
+                let res = await fetch(`${apiUrl}/place-bet`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: tg.initDataUnsafe?.user?.id || 7113504762,
+                        items: selectedDoors,
+                        amount: 10000,
+                        game: type
+                    })
+                });
+                let data = await res.json();
+
+                setTimeout(() => {
+                    bowl.classList.remove('shaking');
+                    diceBox.classList.remove('shaking');
+                    
+                    if(data.success) {
+                        data.result.forEach((r, i) => {
+                            document.getElementById(diceId).querySelectorAll('.dice')[i].innerText = type === 'bau-cua' ? icons[r] : r;
+                        });
+                        bowl.classList.add('open');
+                        document.getElementById('balance').innerText = data.balance.toLocaleString() + 'đ';
+                        tg.showAlert(data.message || "Kết quả đã có!");
+                    } else {
+                        tg.showAlert(data.message || "Có lỗi xảy ra!");
+                    }
+                }, 1200);
+            } catch(e) { 
+                tg.showAlert("Lỗi kết nối máy chủ!"); 
+                bowl.classList.remove('shaking');
+            }
+        }
+    </script>
+</body>
+</html>
